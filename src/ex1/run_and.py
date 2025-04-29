@@ -1,6 +1,6 @@
 import sys
-from ..ex1.runner import run_experiment
-
+sys.path.insert(0, "src")
+from ex1.runner import run_experiment
 
 if len(sys.argv) != 2:
     print("Usage: python run_and.py <config_path.json>")

@@ -1,6 +1,8 @@
 # src/common/runner.py
 import json
-from ..common.activations import step
+import sys
+sys.path.insert(0, "src")
+from common.activations import step
 from perceptron import Perceptron
 
 def run_experiment(config_path, X, Y):
