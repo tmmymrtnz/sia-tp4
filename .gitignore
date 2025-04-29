@@ -9,3 +9,5 @@ data/mnist/
 # artefactos
 *.png
 *.pdf
+
+my_venv
