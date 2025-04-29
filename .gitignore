@@ -1,0 +1,11 @@
+# entornos
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# datasets generados
+data/mnist/
+
+# artefactos
+*.png
+*.pdf
