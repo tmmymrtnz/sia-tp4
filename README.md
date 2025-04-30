@@ -14,5 +14,28 @@ para instalar las dependencias necesarias en el ambiente virtual
 
 ## Ejecución
 
-### Main
+### Ex 1
 
+Para la función lógica **"AND"**:
+
+```bash
+python src/ex1/run_and.py configs/ex1/test.json
+```
+
+Para la función lógica **"XOR"**:
+
+```bash
+python src/ex1/run_xor.py configs/ex1/test.json
+```
+
+### Ex 2 - Comparación lineal vs no-lineal
+
+**Modelo lineal:**
+```bash
+python src/ex2/runner.py configs/ex2/linear.json
+```
+
+**Modelo no lineal (tanh):**
+```bash
+python src/ex2/runner.py configs/ex2/nonlinear.json
+```
