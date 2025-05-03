@@ -1,12 +1,13 @@
 import numpy as np
-from common.losses import mse, cross_entropy
+from common.losses import mse, cross_entropy, binary_cross_entropy
 from common.optimizers import SGD, Momentum, Adam
 from .network import MLP
 
 
 LOSS_FUNS = {
     "mse": mse,
-    "cross_entropy": cross_entropy
+    "cross_entropy": cross_entropy,
+    "bce":  binary_cross_entropy
 }
 
 OPTIMIZERS = {
@@ -50,9 +51,10 @@ class Trainer:
             loss = mse(y_true, y_hat)
             grad = (y_hat - y_true) / len(y_true)
             return loss, grad
-        elif self.loss_fn is cross_entropy:
-            loss = cross_entropy(y_true, y_hat)
-            grad = (y_hat - y_true) / len(y_true)   # dL/dŷ para softmax‑CE
+
+        elif self.loss_fn is binary_cross_entropy:
+            loss = binary_cross_entropy(y_true, y_hat)
+            grad = (y_hat - y_true) / len(y_true)      # grad exacto p/ sigmoid+BCE
             return loss, grad
         else:
             raise ValueError("función de pérdida no soportada")

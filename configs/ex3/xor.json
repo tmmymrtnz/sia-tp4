@@ -1,7 +1,7 @@
 {
     "layer_sizes": [2, 2, 1],
     "activations": ["", "tanh", "sigmoid"],
-    "loss": "cross_entropy",
+    "loss": "bce",
     "optimizer": "sgd",
     "optim_kwargs": {
       "learning_rate": 0.01
