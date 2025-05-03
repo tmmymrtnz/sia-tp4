@@ -9,6 +9,7 @@ from pathlib import Path
 
 # --- importar red y trainer ---
 sys.path.insert(0, "src")
+from common.activations import step
 from ex3.trainer import Trainer
 from ex3.network import MLP
 
@@ -54,5 +55,12 @@ trainer.fit(X, y)
 # --- test final ---
 print("\nPredicciones finales:")
 for x_i, y_i in zip(X, y):
+    # pred = step(net.forward(x_i))
     pred = net.forward(x_i)
-    print(f"Input: {x_i} → Pred: {pred.round(3)}  |  True: {y_i}")
+    if(pred[0] > 0.5):
+        pred = 1
+    else:
+        pred = 0
+    # if(pred == -1):
+    #     pred = 0
+    print(f"Input: {x_i} → Pred: {pred}  |  True: {y_i}")

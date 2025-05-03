@@ -2,9 +2,9 @@ import math
 import numpy as np
 
 # ---------- básicas ----------
-def step(x: float) -> int:
-    """Escalón bipolar (+1 / -1)."""
-    return 1 if x >= 0 else -1
+def step(x: np.ndarray) -> np.ndarray:
+    """Escalón bipolar (+1 / -1), vectorizado."""
+    return np.where(x >= 0, 1, -1)
 
 
 def identity(x: float) -> float:          # <- lineal

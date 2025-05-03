@@ -26,23 +26,24 @@ class DenseLayer:
         self.z  = None
 
     # ------------------------------------------------------------------ #
+    # DenseLayer.forward (batch-aware)
     def forward(self, x: np.ndarray) -> np.ndarray:
-        """Propagación hacia adelante – almacena entradas para el backward."""
-        self.x = x                       # (in_dim,)
-        self.z = self.W @ x + self.b     # (out_dim,)
-        return self.f(self.z)            # (out_dim,)
+        self.x = x                             # (B, in_dim)
+        self.z = x @ self.W.T + self.b         # (B, out_dim)
+        return self.f(self.z)                  # (B, out_dim)
 
     # ------------------------------------------------------------------ #
+    # DenseLayer.backward (batch-aware)
     def backward(self, grad_out: np.ndarray) -> np.ndarray:
         """
         grad_out = dL/da   (misma shape que la salida)
         Devuelve          = dL/dx  (shape in_dim,)
         """
-        dz = grad_out * self.df(self.z)           # dL/dz
-        self.dW = dz[:, None] @ self.x[None, :]   # dL/dW
-        self.db = dz                              # dL/db
-        return self.W.T @ dz                      # dL/dx
-
+        dz = grad_out * self.df(self.z)        # (B, out_dim)
+        self.dW = dz.T @ self.x / len(self.x)  # (out_dim, in_dim)
+        self.db = dz.mean(axis=0)              # (out_dim,)
+        return dz @ self.W                     # (B, in_dim)
+    
     # ------------------------------------------------------------------ #
     def params_and_grads(self):
         """Itera (param, grad) para que el optimizador actualice."""

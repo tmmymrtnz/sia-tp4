@@ -26,6 +26,7 @@ class MLP:
             )
 
     # ------------------------------------------------------------------ #
+    # Cada capa es batch-aware
     def forward(self, x: np.ndarray) -> np.ndarray:
         """Propaga x a lo largo de todas las capas y devuelve la salida."""
         for layer in self.layers:

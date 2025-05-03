@@ -72,19 +72,18 @@ class Trainer:
                 yb = Y[i:i + self.batch]
 
                 # vectorizado forward
-                y_hat = np.array([self.net.forward(x) for x in xb])
+                y_hat = self.net.forward(xb)    # (B, out_dim)
 
                 # loss & grad
                 loss, grad_yhat = self._loss_and_grad(y_hat, yb)
                 epoch_loss += loss * len(xb)
 
-                # backward (un ejemplo a la vez para claridad)
-                for x, gy in zip(reversed(xb), grad_yhat):
-                    self.net.backward(gy)
+                # backward
+                self.net.backward(grad_yhat)   # batch-wise
 
                 # optim update
-                self.optim.update(self.net.params_and_grads())
+                self.optim.update(self.net.params_and_grads())  # params actualizados por batch
 
             epoch_loss /= N
             if verbose:
-                print(f"Epoch {epoch:3d}  |  loss = {epoch_loss:.6f}")
+                print(f"Epoch {epoch}  |  loss = {epoch_loss}")
