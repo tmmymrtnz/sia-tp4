@@ -1,19 +1,24 @@
 """
-Runner para el Ejercicio 3 – caso XOR usando red MLP.
+Runner para el Ejercicio 3 – caso XOR usando red MLP.
 Ejemplo de uso:
     python src/ex3/runner_xor.py src/ex3/configs/xor.json
 """
-import sys, json
-import numpy as np
+import sys
+import json
 from pathlib import Path
 
-# --- importar red y trainer ---
-sys.path.insert(0, "src")
-from common.activations import step
-from ex3.trainer import Trainer
-from ex3.network import MLP
+import numpy as np
 
-# --- leer config ---
+# --------------------------------------------------------------------------- #
+# 1.  importar red y trainer
+# --------------------------------------------------------------------------- #
+sys.path.insert(0, "src")          # para que “src/…” sea import‑root
+from ex3.trainer import Trainer
+from ex3.network import MLP        # tu implementación de la red
+
+# --------------------------------------------------------------------------- #
+# 2. leer la configuración
+# --------------------------------------------------------------------------- #
 if len(sys.argv) != 2:
     print("Uso: python runner_xor.py <config.json>")
     sys.exit(1)
@@ -22,22 +27,24 @@ cfg_path = Path(sys.argv[1])
 with cfg_path.open() as f:
     cfg = json.load(f)
 
-# --- datos XOR ---
-X = np.array([
-    [0, 0],
-    [0, 1],
-    [1, 0],
-    [1, 1]
-])
+# --------------------------------------------------------------------------- #
+# 3. datos XOR
+# --------------------------------------------------------------------------- #
+X = np.array(
+    [
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1],
+    ],
+    dtype=np.float32,
+)
 
-y = np.array([
-    [0],
-    [1],
-    [1],
-    [0]
-])
+y = np.array([[0], [1], [1], [0]], dtype=np.float32)
 
-# --- red y trainer ---
+# --------------------------------------------------------------------------- #
+# 4. instanciar red y trainer
+# --------------------------------------------------------------------------- #
 net = MLP(cfg["layer_sizes"], cfg["activations"])
 
 trainer = Trainer(
@@ -46,21 +53,24 @@ trainer = Trainer(
     optimizer_name=cfg["optimizer"],
     optim_kwargs=cfg["optim_kwargs"],
     batch_size=cfg["batch_size"],
-    max_epochs=cfg["max_epochs"]
+    max_epochs=cfg["max_epochs"],
+
+    log_every= 100,
+    log_weights= True
 )
 
-# --- entrenar ---
+# --------------------------------------------------------------------------- #
+# 5. entrenar
+# --------------------------------------------------------------------------- #
 trainer.fit(X, y)
 
-# --- test final ---
+# --------------------------------------------------------------------------- #
+# 6. test final
+# --------------------------------------------------------------------------- #
 print("\nPredicciones finales:")
 for x_i, y_i in zip(X, y):
-    # pred = step(net.forward(x_i))
-    pred = net.forward(x_i)
-    if(pred[0] > 0.5):
-        pred = 1
-    else:
-        pred = 0
-    # if(pred == -1):
-    #     pred = 0
-    print(f"Input: {x_i} → Pred: {pred}  |  True: {y_i}")
+    # Siempre pasamos un array 2‑D al forward;
+    # después quitamos la primera dimensión.
+    prob = net.forward(x_i[None, :])[0, 0]
+    pred = int(prob > 0.5)
+    print(f"Input: {x_i} → Pred: {pred}  |  True: {int(y_i)}")

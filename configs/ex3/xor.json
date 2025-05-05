@@ -2,7 +2,7 @@
     "layer_sizes": [2, 5, 1],
     "activations": ["", "tanh", "sigmoid"],
     "loss": "bce",
-    "optimizer": "sgd",
+    "optimizer": "adam",
     "optim_kwargs": {
       "learning_rate": 0.1
     },
