@@ -82,7 +82,7 @@ if __name__ == "__main__":
     evaluate_and_print(net, X, y, label_prefix="Original")
 
     # evaluar archivos con ruido
-    for i in range(1, 4):
+    for i in range(1, 5):
         noisy_file = base_path / f"noisy{i}.txt"
         if not noisy_file.exists():
             print(f"Advertencia: {noisy_file} no existe, omitiendo.")

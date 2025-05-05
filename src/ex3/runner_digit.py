@@ -3,8 +3,9 @@ Runner para el Ejercicio 3.3 – Discriminación de dígitos (0–9) sobre imág
 Uso:
     python src/ex3/runner_digit.py src/ex3/configs/digit.json
 
-Se asume que el archivo de datos “TP3-ej3-digitos.txt” está ubicado en /data.
-El archivo contiene 70 líneas (10 dígitos × 7 filas), cada fila con 5 valores 0/1 separados por espacios.
+Se asume que el archivo de datos “TP3-ej3-digitos.txt” está ubicado en data/,
+y que los archivos de prueba con ruido “noisy1.txt”, “noisy2.txt” y “noisy3.txt”
+también están en ese mismo directorio.
 """
 import sys
 import json
@@ -19,24 +20,32 @@ from ex3.network import MLP
 
 def load_digit_dataset(path: Path):
     lines = [ln.strip() for ln in path.open() if ln.strip()]
-    # Deben haber 70 líneas: 10 dígitos × 7 filas
     if len(lines) % 7 != 0:
         raise ValueError(f"Número de líneas inválido: se esperaba múltiplo de 7, pero hay {len(lines)} líneas.")
     num_digits = len(lines) // 7
     X, y = [], []
     for idx in range(num_digits):
-        digit_bits = []
+        bits = []
         for row in lines[idx*7:(idx+1)*7]:
             row_bits = list(map(int, row.split()))
             if len(row_bits) != 5:
-                raise ValueError(f"Cada fila debe tener 5 bits, pero se encontró {len(row_bits)} en la fila: '{row}'")
-            digit_bits.extend(row_bits)
-        X.append(digit_bits)
-        # etiqueta original: dígito idx (0–9)
-        y_onehot = np.zeros(10, dtype=float)
-        y_onehot[idx] = 1.0
-        y.append(y_onehot)
+                raise ValueError(f"Cada fila debe tener 5 bits, pero se encontró {len(row_bits)} en '{row}'")
+            bits.extend(row_bits)
+        X.append(bits)
+        onehot = np.zeros(10, dtype=float)
+        onehot[idx] = 1.0
+        y.append(onehot)
     return np.array(X, dtype=float), np.array(y, dtype=float)
+
+
+def evaluate_dataset(net, X, y_true, prefix="Dataset"):
+    y_hat = net.forward(X)           # (N,10)
+    preds = np.argmax(y_hat, axis=1)
+    trues = np.argmax(y_true, axis=1)
+    acc = np.mean(preds == trues)
+    print(f"\n[{prefix}] Accuracy: {acc:.4f}")
+    for i, (p, prob, t) in enumerate(zip(preds, y_hat, trues)):
+        print(f"{prefix} idx {i}: Pred={p} (p={prob[p]:.3f}) | True={t}")
 
 
 if __name__ == "__main__":
@@ -48,15 +57,16 @@ if __name__ == "__main__":
     with cfg_path.open() as f:
         cfg = json.load(f)
 
-    data_path = Path("data/TP3-ej3-digitos.txt")
-    if not data_path.exists():
-        print(f"Error: no se encuentra el archivo de datos en {data_path}")
+    data_dir = Path("data")
+    main_file = data_dir / "TP3-ej3-digitos.txt"
+    if not main_file.exists():
+        print(f"Error: no se encuentra el archivo base en {main_file}")
         sys.exit(1)
 
-    # cargar datos y etiquetas one-hot
-    X, y = load_digit_dataset(data_path)
+    # cargar datos originales
+    X, y = load_digit_dataset(main_file)
 
-    # preparar activaciones: si falta dummy, prepender identidad
+    # preparar activaciones (añadir dummy si falta)
     layer_sizes = cfg.get("layer_sizes", [])
     activs = cfg.get("activations", [])
     if len(activs) == len(layer_sizes) - 1:
@@ -76,19 +86,15 @@ if __name__ == "__main__":
     # entrenamiento
     trainer.fit(X, y)
 
-    # evaluación
-    y_hat = net.forward(X)  # (N,10)
-    preds = np.argmax(y_hat, axis=1)
-    trues = np.arange(len(X))
-    accuracy = np.mean(preds == trues)
-    print(f"\nAccuracy en todo el dataset: {accuracy:.4f}")
+    # evaluación sobre el dataset original
+    evaluate_dataset(net, X, y, prefix="Original")
 
-    print("\nPredicciones finales:")
-    for idx, pred in enumerate(preds):
-        print(f"Dígito {idx}: Predicción → {pred}  |  Verdadero → {idx}")
+    # evaluación sobre archivos con ruido
+    for i in range(1, 5):
+        noisy_path = data_dir / f"noisy{i}.txt"
+        if not noisy_path.exists():
+            print(f"Advertencia: {noisy_path} no existe, omitiendo.")
+            continue
+        Xn, yn = load_digit_dataset(noisy_path)
+        evaluate_dataset(net, Xn, yn, prefix=f"Noisy{i}")
 
-    # matriz de confusión
-    from sklearn.metrics import confusion_matrix
-    cm = confusion_matrix(trues, preds)
-    print("\nMatriz de confusión:")
-    print(cm)

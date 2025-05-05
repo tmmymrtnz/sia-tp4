@@ -39,3 +39,23 @@ python src/ex2/runner.py configs/ex2/linear.json
 ```bash
 python src/ex2/runner.py configs/ex2/nonlinear.json
 ```
+
+### Ex 3
+
+Para la función lógica **"XOR"**:
+
+```bash
+python3 src/ex3/runner.py configs/ex3/xor.json
+```
+
+Para la función par:
+
+```bash
+python3 src/ex3/runner_parity.py configs/ex3/parity.json
+```
+
+Para la función dígito:
+
+```bash
+python src/ex3/runner_digit.py configs/ex3/digit.json
+```
