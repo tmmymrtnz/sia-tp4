@@ -1,8 +1,21 @@
-import math
+"""
+Optimizers compatibles con el Trainer (un solo iterable param‑grad).
+"""
 
-class SGD:
-    """Plain Stochastic Gradient Descent (no momentum)."""
-    def __init__(self, learning_rate=0.01):
+import math
+from collections import defaultdict
+import numpy as np
+
+
+# ---------------------------------------------------------------------
+class Optimizer:
+    def update(self, params_and_grads):
+        raise NotImplementedError
+
+
+# ---------------------------------------------------------------------
+class SGD(Optimizer):
+    def __init__(self, learning_rate=0.01, **_):
         self.learning_rate = learning_rate
 
     def update(self, params_and_grads):
@@ -10,46 +23,37 @@ class SGD:
             param -= self.learning_rate * grad
 
 
-class Momentum:
-    """Gradient Descent with Momentum."""
-    def __init__(self, learning_rate=0.01, momentum=0.9):
-        self.learning_rate = learning_rate
-        self.momentum = momentum
-        self.velocity = None
+# ---------------------------------------------------------------------
+class Momentum(Optimizer):
+    def __init__(self, learning_rate=0.01, beta=0.9, **_):
+        self.learning_rate   = learning_rate
+        self.beta = beta
+        self.vel  = defaultdict(lambda: 0.0)
 
-    def update(self, params, grads):
-        if self.velocity is None:
-            self.velocity = [0 for _ in params]
-
-        for i in range(len(params)):
-            self.velocity[i] = self.momentum * self.velocity[i] - self.learning_rate * grads[i]
-            params[i] += self.velocity[i]
+    def update(self, params_and_grads):
+        for param, grad in params_and_grads:
+            k = id(param)
+            self.vel[k] = self.beta * self.vel[k] + (1 - self.beta) * grad
+            param -= self.learning_rate * self.vel[k]
 
 
-class Adam:
-    """Adaptive Moment Estimation optimizer."""
-    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8):
-        self.learning_rate = learning_rate
-        self.beta1 = beta1
-        self.beta2 = beta2
-        self.epsilon = epsilon
-        self.t = 0  # timestep
-        self.m = None  # first moment
-        self.v = None  # second moment
+# ---------------------------------------------------------------------
+class Adam(Optimizer):
+    def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, eps=1e-8, **_):
+        self.learning_rate, self.b1, self.b2, self.eps = learning_rate, beta1, beta2, eps
+        self.t = 0
+        self.m = defaultdict(lambda: 0.0)
+        self.v = defaultdict(lambda: 0.0)
 
-    def update(self, params, grads):
-        if self.m is None:
-            self.m = [0 for _ in params]
-            self.v = [0 for _ in params]
-
+    def update(self, params_and_grads):
         self.t += 1
-        lr_t = self.learning_rate * math.sqrt(1 - self.beta2 ** self.t) / (1 - self.beta1 ** self.t)
+        for param, grad in params_and_grads:
+            k = id(param)
+            # 1er y 2º momento
+            self.m[k] = self.b1 * self.m[k] + (1 - self.b1) * grad
+            self.v[k] = self.b2 * self.v[k] + (1 - self.b2) * (grad * grad)
 
-        for i in range(len(params)):
-            self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * grads[i]
-            self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (grads[i] ** 2)
+            m_hat = self.m[k] / (1 - self.b1 ** self.t)
+            v_hat = self.v[k] / (1 - self.b2 ** self.t)
 
-            m_hat = self.m[i] / (1 - self.beta1 ** self.t)
-            v_hat = self.v[i] / (1 - self.beta2 ** self.t)
-
-            params[i] -= lr_t * m_hat / (math.sqrt(v_hat) + self.epsilon)
+            param -= self.learning_rate * m_hat / (np.sqrt(v_hat) + self.eps)
