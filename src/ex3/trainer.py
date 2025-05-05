@@ -25,7 +25,6 @@ class Trainer:
         • hace forward, calcula pérdida y su gradiente
         • back‑prop, actualiza por optimizador
     """
-    # ------------------------------------------------------------------ #
     def __init__(
         self,
         net: MLP,
@@ -33,19 +32,20 @@ class Trainer:
         optimizer_name: str,
         optim_kwargs: dict,
         batch_size: int,
-        max_epochs: int
+        max_epochs: int,
+        shuffle: bool = True
     ):
         self.net = net
         self.loss_fn = LOSS_FUNS[loss_name]
         self.optim = OPTIMIZERS[optimizer_name](**optim_kwargs)
         self.batch = batch_size
         self.epochs = max_epochs
+        self.shuffle = shuffle
 
-    # ------------------------------------------------------------------ #
-    def _loss_and_grad(self, y_hat, y_true):
+    def _loss_and_grad(self, y_hat: np.ndarray, y_true: np.ndarray):
         """
         Devuelve (loss_scalar, grad_yhat).
-        Para MSE y CE implementados en common.losses.
+        Soporta mse, binary_cross_entropy y cross_entropy.
         """
         if self.loss_fn is mse:
             loss = mse(y_true, y_hat)
@@ -54,18 +54,25 @@ class Trainer:
 
         elif self.loss_fn is binary_cross_entropy:
             loss = binary_cross_entropy(y_true, y_hat)
-            grad = (y_hat - y_true) / len(y_true)      # grad exacto p/ sigmoid+BCE
+            grad = (y_hat - y_true) / len(y_true)
             return loss, grad
-        else:
-            raise ValueError("función de pérdida no soportada")
 
-    # ------------------------------------------------------------------ #
+        elif self.loss_fn is cross_entropy:
+            # Asumimos softmax en salida
+            loss = cross_entropy(y_true, y_hat)
+            grad = (y_hat - y_true) / len(y_true)
+            return loss, grad
+
+        else:
+            raise ValueError(f"Función de pérdida no soportada: {self.loss_fn}")
+
     def fit(self, X: np.ndarray, Y: np.ndarray, verbose: bool = True):
         N = len(X)
         for epoch in range(1, self.epochs + 1):
             # ---- shuffle ----
-            perm = np.random.permutation(N)
-            X, Y = X[perm], Y[perm]
+            if self.shuffle:
+                perm = np.random.permutation(N)
+                X, Y = X[perm], Y[perm]
 
             epoch_loss = 0.0
             # ---- mini‑batches ----
@@ -74,18 +81,18 @@ class Trainer:
                 yb = Y[i:i + self.batch]
 
                 # vectorizado forward
-                y_hat = self.net.forward(xb)    # (B, out_dim)
+                y_hat = self.net.forward(xb)
 
                 # loss & grad
                 loss, grad_yhat = self._loss_and_grad(y_hat, yb)
                 epoch_loss += loss * len(xb)
 
                 # backward
-                self.net.backward(grad_yhat)   # batch-wise
+                self.net.backward(grad_yhat)
 
                 # optim update
-                self.optim.update(self.net.params_and_grads())  # params actualizados por batch
+                self.optim.update(self.net.params_and_grads())
 
             epoch_loss /= N
             if verbose:
-                print(f"Epoch {epoch}  |  loss = {epoch_loss}")
+                print(f"Epoch {epoch}  |  loss = {epoch_loss:.6f}")

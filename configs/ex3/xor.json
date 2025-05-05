@@ -1,11 +1,11 @@
 {
-    "layer_sizes": [2, 2, 1],
+    "layer_sizes": [2, 5, 1],
     "activations": ["", "tanh", "sigmoid"],
     "loss": "bce",
     "optimizer": "sgd",
     "optim_kwargs": {
-      "learning_rate": 0.01
+      "learning_rate": 0.1
     },
     "batch_size": 4,
-    "max_epochs": 400
+    "max_epochs": 10000
   }

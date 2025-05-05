@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class SGD:
     """Plain Stochastic Gradient Descent (no momentum)."""
@@ -6,9 +7,9 @@ class SGD:
         self.learning_rate = learning_rate
 
     def update(self, params_and_grads):
+        # params_and_grads: iterable of (param, grad)
         for param, grad in params_and_grads:
             param -= self.learning_rate * grad
-
 
 class Momentum:
     """Gradient Descent with Momentum."""
@@ -17,14 +18,18 @@ class Momentum:
         self.momentum = momentum
         self.velocity = None
 
-    def update(self, params, grads):
+    def update(self, params_and_grads):
+        # Convert generator to list to reuse
+        pg = list(params_and_grads)  # [(param, grad), ...]
         if self.velocity is None:
-            self.velocity = [0 for _ in params]
-
-        for i in range(len(params)):
-            self.velocity[i] = self.momentum * self.velocity[i] - self.learning_rate * grads[i]
-            params[i] += self.velocity[i]
-
+            # Initialize velocity vectors to zeros, matching each param shape
+            self.velocity = [np.zeros_like(param) for param, _ in pg]
+        # Update each parameter
+        for i, (param, grad) in enumerate(pg):
+            # v = μ v − η g
+            self.velocity[i] = self.momentum * self.velocity[i] - self.learning_rate * grad
+            # p ← p + v
+            param += self.velocity[i]
 
 class Adam:
     """Adaptive Moment Estimation optimizer."""
@@ -34,22 +39,28 @@ class Adam:
         self.beta2 = beta2
         self.epsilon = epsilon
         self.t = 0  # timestep
-        self.m = None  # first moment
-        self.v = None  # second moment
+        self.m = None  # first moment vectors
+        self.v = None  # second moment vectors
 
-    def update(self, params, grads):
+    def update(self, params_and_grads):
+        # Convert generator to list to reuse
+        pg = list(params_and_grads)  # [(param, grad), ...]
+        # Initialize m and v on first call
         if self.m is None:
-            self.m = [0 for _ in params]
-            self.v = [0 for _ in params]
-
+            self.m = [np.zeros_like(param) for param, _ in pg]
+            self.v = [np.zeros_like(param) for param, _ in pg]
+        # Increment time step
         self.t += 1
+        # Compute bias-corrected learning rate
         lr_t = self.learning_rate * math.sqrt(1 - self.beta2 ** self.t) / (1 - self.beta1 ** self.t)
-
-        for i in range(len(params)):
-            self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * grads[i]
-            self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (grads[i] ** 2)
-
+        # Update each parameter
+        for i, (param, grad) in enumerate(pg):
+            # Update biased first moment estimate
+            self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * grad
+            # Update biased second raw moment estimate
+            self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (grad * grad)
+            # Compute bias-corrected moment estimates
             m_hat = self.m[i] / (1 - self.beta1 ** self.t)
             v_hat = self.v[i] / (1 - self.beta2 ** self.t)
-
-            params[i] -= lr_t * m_hat / (math.sqrt(v_hat) + self.epsilon)
+            # Update parameter
+            param -= lr_t * m_hat / (np.sqrt(v_hat) + self.epsilon)
