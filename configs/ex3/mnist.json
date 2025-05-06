@@ -1,0 +1,12 @@
+{
+    "layer_sizes": [784, 64, 10],
+    "activations": ["", "tanh", "sigmoid"],
+    "loss": "cross_entropy",
+    "optimizer": "adam",
+    "optim_kwargs": {
+      "learning_rate": 0.01
+    },
+    "batch_size": 128,
+    "max_epochs": 40
+  }
+  

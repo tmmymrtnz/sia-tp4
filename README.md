@@ -59,3 +59,9 @@ Para la función dígito:
 ```bash
 python src/ex3/runner_digit.py configs/ex3/digit.json
 ```
+
+Para la función dígito con el dataset MNIST:
+
+```bash
+python src/ex3/runner_mnist.py data/MNIST/mnist_train.csv data/MNIST/mnist_test.csv configs/ex3/mnist.json
+```
