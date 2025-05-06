@@ -78,12 +78,22 @@ class Trainer:
             snapshot = [w.copy() for w, _ in self.net.params_and_grads()]
             self.weight_hist.append((epoch, snapshot))
     
-    def _log_metrics(self, X, Y, epoch: int, prefix="train"):
-        y_hat = self.net.forward(X)
-        y_pred = (y_hat > 0.5).astype(int)
-        acc = accuracy_score(Y, y_pred)
-        f1 = f1_score(Y, y_pred)
-        print(f"    ↳ {prefix} metrics: acc={acc:.4f}, f1={f1:.4f}")
+    def _log_metrics(self, X, Y, epoch: int):
+        y_probs = self.net.forward(X)
+        y_pred = np.argmax(y_probs, axis=1)
+        y_true = np.argmax(Y, axis=1)
+
+        acc = accuracy_score(y_true, y_pred)
+
+        # Detect if binary or multiclass
+        is_binary = Y.shape[1] == 2
+
+        if is_binary:
+            f1 = f1_score(y_true, y_pred, average="binary")
+        else:
+            f1 = f1_score(y_true, y_pred, average="macro")  # or 'weighted' if preferred
+
+        print(f"    ↳ train metrics: acc={acc:.4f}, f1={f1:.4f}")
 
     def fit(self, X: np.ndarray, Y: np.ndarray):
         N = len(X)
@@ -128,4 +138,6 @@ class Trainer:
 
             if patience_counter >= patience:
                 print(f"Stopping early at epoch {epoch} (no improvement for {patience} epochs)")
+                self._log_weights(epoch)
+                self._log_metrics(X, Y, epoch)
                 break

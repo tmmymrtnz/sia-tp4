@@ -37,15 +37,29 @@ def load_digit_dataset(path: Path):
         y.append(onehot)
     return np.array(X, dtype=float), np.array(y, dtype=float)
 
+def print_confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray, labels=range(10), title="Confusion Matrix"):
+    matrix = np.zeros((len(labels), len(labels)), dtype=int)
+    for t, p in zip(y_true, y_pred):
+        matrix[t][p] += 1
+
+    print(f"\n{title}")
+    header = "     " + " ".join(f"{l:^5}" for l in labels)
+    print(header)
+    print("    " + "-" * (6 * len(labels)))
+    for i, row in enumerate(matrix):
+        row_str = " ".join(f"{val:^5}" for val in row)
+        print(f"{i:^3} | {row_str}")
 
 def evaluate_dataset(net, X, y_true, prefix="Dataset"):
     y_hat = net.forward(X)           # (N,10)
     preds = np.argmax(y_hat, axis=1)
     trues = np.argmax(y_true, axis=1)
     acc = np.mean(preds == trues)
+    print("--" * 40)
     print(f"\n[{prefix}] Accuracy: {acc:.4f}")
     for i, (p, prob, t) in enumerate(zip(preds, y_hat, trues)):
         print(f"{prefix} idx {i}: Pred={p} (p={prob[p]:.3f}) | True={t}")
+    print_confusion_matrix(trues, preds, title=f"[{prefix}] – Confusion Matrix")
 
 
 if __name__ == "__main__":
