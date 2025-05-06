@@ -11,6 +11,7 @@ import sys
 import json
 import numpy as np
 from pathlib import Path
+from sklearn.metrics import confusion_matrix
 
 # --- importar red y trainer ---
 sys.path.insert(0, "src")
@@ -35,12 +36,20 @@ def load_parity_dataset(path: Path):
         y.append([idx % 2])
     return np.array(X, dtype=float), np.array(y, dtype=float)
 
+def print_confusion_matrix(y_true, y_pred, label_prefix=""):
+    cm = confusion_matrix(y_true, y_pred)
+    print(f"\n[{label_prefix}] Confusion Matrix:")
+    print("          Pred 0    Pred 1")
+    print(f"True 0   {cm[0,0]:>7}   {cm[0,1]:>7}")
+    print(f"True 1   {cm[1,0]:>7}   {cm[1,1]:>7}\n")
 
 def evaluate_and_print(net, X, y_true, label_prefix="Dataset"):
     y_hat = net.forward(X)
     y_pred = (y_hat > 0.5).astype(int)
     accuracy = np.mean(y_pred == y_true)
+    print("--" * 40)
     print(f"\n[{label_prefix}] Accuracy: {accuracy:.4f}")
+    print_confusion_matrix(y_true, y_pred, label_prefix=label_prefix)
     for i, (pred, prob, true) in enumerate(zip(y_pred, y_hat, y_true)):
         print(f"{label_prefix} idx {i}: Pred={pred[0]} (p={prob[0]:.3f}) | True={true[0]}")
 

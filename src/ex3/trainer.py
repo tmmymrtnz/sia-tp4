@@ -2,6 +2,7 @@ import numpy as np
 from common.losses      import mse, cross_entropy, binary_cross_entropy
 from common.optimizers  import SGD, Momentum, Adam
 from .network           import MLP
+from sklearn.metrics    import accuracy_score, f1_score
 
 LOSS_FUNS = {
     "mse"           : mse,
@@ -76,6 +77,13 @@ class Trainer:
         if self.log_weights:
             snapshot = [w.copy() for w, _ in self.net.params_and_grads()]
             self.weight_hist.append((epoch, snapshot))
+    
+    def _log_metrics(self, X, Y, epoch: int, prefix="train"):
+        y_hat = self.net.forward(X)
+        y_pred = (y_hat > 0.5).astype(int)
+        acc = accuracy_score(Y, y_pred)
+        f1 = f1_score(Y, y_pred)
+        print(f"    ↳ {prefix} metrics: acc={acc:.4f}, f1={f1:.4f}")
 
     def fit(self, X: np.ndarray, Y: np.ndarray):
         N = len(X)
@@ -109,6 +117,7 @@ class Trainer:
             if epoch % self.log_every == 0 or epoch == 1 or epoch == self.epochs:
                 print(f"Epoch {epoch:>5d}/{self.epochs} | loss={epoch_loss:.6f}")
                 self._log_weights(epoch)
+                self._log_metrics(X, Y, epoch)
 
             # ----- early stopping condition -----
             if abs(prev_loss - epoch_loss) < epsilon:
