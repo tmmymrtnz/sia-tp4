@@ -1,0 +1,28 @@
+{
+    "task": "digit",
+    "data_path": "data/TP3-ej3-digitos.txt",
+    "layer_sizes": [35, 64, 10],
+    "activations": ["", "tanh", "sigmoid"],
+    "loss": "cross_entropy",
+    "optimizer": "adam",
+    "optim_kwargs": { "learning_rate": 0.01 },
+    "batch_size": 10,
+    "max_epochs": 10000,
+  
+    "augment": {
+      "copies_per_digit": 20,
+      "noise_p": 0.05
+    },
+  
+    "cv": {
+      "n_splits": 5,
+      "n_runs": 5,
+      "shuffle_split_test_size": 0.2
+    },
+  
+    "holdout": {
+      "test_sizes": [0.1, 0.2, 0.3, 0.4, 0.5],
+      "n_runs": 1
+    }
+  }
+  
