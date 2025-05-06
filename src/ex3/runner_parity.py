@@ -74,7 +74,7 @@ if __name__ == "__main__":
     X, y = load_parity_dataset(main_file)
 
     # inicializar modelo y trainer
-    net = MLP(cfg["layer_sizes"], cfg["activations"])
+    net = MLP(cfg["layer_sizes"], cfg["activations"], cfg.get("dropout_rate", 0.0))
     trainer = Trainer(
         net=net,
         loss_name=cfg["loss"],

@@ -96,11 +96,20 @@ class Trainer:
         print(f"    ↳ train metrics: acc={acc:.4f}, f1={f1:.4f}")
 
     def fit(self, X: np.ndarray, Y: np.ndarray):
+        """
+        Entrena la red con los datos proporcionados.
+        Maneja automáticamente los modos de entrenamiento/evaluación si están disponibles.
+        """
+        # Activar modo entrenamiento (con dropout) si está disponible
+        if hasattr(self.net, 'train'):
+            self.net.train()
+        
         N = len(X)
         prev_loss = float('inf')
         patience_counter = 0
         epsilon = 1e-4      
         patience = 10       # stop if loss doesn't improve after 10 epochs
+        loss_history = []   # Para guardar el historial de pérdida
 
         for epoch in range(1, self.epochs + 1):
             # shuffle
@@ -124,6 +133,8 @@ class Trainer:
                 self.optim.update(self.net.params_and_grads())
 
             epoch_loss /= N
+            loss_history.append(epoch_loss)
+            
             if epoch % self.log_every == 0 or epoch == 1 or epoch == self.epochs:
                 print(f"Epoch {epoch:>5d}/{self.epochs} | loss={epoch_loss:.6f}")
                 self._log_weights(epoch)
@@ -141,3 +152,9 @@ class Trainer:
                 self._log_weights(epoch)
                 self._log_metrics(X, Y, epoch)
                 break
+        
+        # Al terminar el entrenamiento, activar modo evaluación (sin dropout)
+        if hasattr(self.net, 'eval'):
+            self.net.eval()
+        
+        return loss_history
