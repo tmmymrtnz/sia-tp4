@@ -79,13 +79,17 @@ class Trainer:
 
     def fit(self, X: np.ndarray, Y: np.ndarray):
         N = len(X)
+        prev_loss = float('inf')
+        patience_counter = 0
+        epsilon = 1e-4      
+        patience = 10       # stop if loss doesn't improve after 10 epochs
+
         for epoch in range(1, self.epochs + 1):
             # shuffle
             perm = np.random.permutation(N)
             X, Y = X[perm], Y[perm]
 
             epoch_loss = 0.0
-            # mini-batches
             for i in range(0, N, self.batch):
                 xb = X[i : i + self.batch]
                 yb = Y[i : i + self.batch]
@@ -102,6 +106,17 @@ class Trainer:
                 self.optim.update(self.net.params_and_grads())
 
             epoch_loss /= N
-            if epoch % self.log_every == 0 or epoch in (1, self.epochs):
+            if epoch % self.log_every == 0 or epoch == 1 or epoch == self.epochs:
                 print(f"Epoch {epoch:>5d}/{self.epochs} | loss={epoch_loss:.6f}")
                 self._log_weights(epoch)
+
+            # ----- early stopping condition -----
+            if abs(prev_loss - epoch_loss) < epsilon:
+                patience_counter += 1
+            else:
+                patience_counter = 0
+            prev_loss = epoch_loss
+
+            if patience_counter >= patience:
+                print(f"Stopping early at epoch {epoch} (no improvement for {patience} epochs)")
+                break
