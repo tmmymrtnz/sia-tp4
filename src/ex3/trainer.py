@@ -34,16 +34,22 @@ class Trainer:
         batch_size     : int,
         max_epochs     : int,
         log_every      : int = 1000,
-        log_weights    : bool = False
+        log_weights    : bool = False,
+        early_stopping : bool = True,
+        patience       : int = 10,
+        min_delta      : float = 1e-4
     ):
-        self.net         = net
-        self.loss_fn     = LOSS_FUNS[loss_name]
-        self.optim       = OPTIMIZERS[optimizer_name](**optim_kwargs)
-        self.batch       = batch_size
-        self.epochs      = max_epochs
-        self.log_every   = max(1, log_every)
-        self.log_weights = log_weights
-        self.weight_hist = []
+        self.net            = net
+        self.loss_fn        = LOSS_FUNS[loss_name]
+        self.optim          = OPTIMIZERS[optimizer_name](**optim_kwargs)
+        self.batch          = batch_size
+        self.epochs         = max_epochs
+        self.log_every      = max(1, log_every)
+        self.log_weights    = log_weights
+        self.weight_hist    = []
+        self.early_stopping = early_stopping
+        self.patience       = patience
+        self.min_delta      = min_delta
 
     def _loss_and_grad(self, y_hat: np.ndarray, y_true: np.ndarray):
         """
@@ -99,6 +105,13 @@ class Trainer:
         """
         Entrena la red con los datos proporcionados.
         Maneja automáticamente los modos de entrenamiento/evaluación si están disponibles.
+        
+        Parámetros:
+            X: Datos de entrada
+            Y: Etiquetas/objetivos
+            
+        Retorna:
+            loss_history: Lista con el valor de pérdida en cada época
         """
         # Activar modo entrenamiento (con dropout) si está disponible
         if hasattr(self.net, 'train'):
@@ -107,8 +120,6 @@ class Trainer:
         N = len(X)
         prev_loss = float('inf')
         patience_counter = 0
-        epsilon = 1e-4      
-        patience = 10       # stop if loss doesn't improve after 10 epochs
         loss_history = []   # Para guardar el historial de pérdida
 
         for epoch in range(1, self.epochs + 1):
@@ -141,18 +152,19 @@ class Trainer:
                 self._log_metrics(X, Y, epoch)
 
             # ----- early stopping condition -----
-            if abs(prev_loss - epoch_loss) < epsilon:
-                patience_counter += 1
-            else:
-                patience_counter = 0
-            prev_loss = epoch_loss
+            if self.early_stopping:
+                if abs(prev_loss - epoch_loss) < self.min_delta:
+                    patience_counter += 1
+                else:
+                    patience_counter = 0
+                prev_loss = epoch_loss
 
-            if patience_counter >= patience:
-                print(f"Stopping early at epoch {epoch} (no improvement for {patience} epochs)")
-                self._log_weights(epoch)
-                self._log_metrics(X, Y, epoch)
-                break
-        
+                if patience_counter >= self.patience:
+                    print(f"Stopping early at epoch {epoch} (no improvement for {self.patience} epochs)")
+                    self._log_weights(epoch)
+                    self._log_metrics(X, Y, epoch)
+                    break
+    
         # Al terminar el entrenamiento, activar modo evaluación (sin dropout)
         if hasattr(self.net, 'eval'):
             self.net.eval()
