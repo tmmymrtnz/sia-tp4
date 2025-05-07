@@ -13,8 +13,8 @@ import numpy as np
 # 1.  importar red y trainer
 # --------------------------------------------------------------------------- #
 sys.path.insert(0, "src")          # para que “src/…” sea import‑root
-from ex3.trainer import Trainer
-from ex3.network import MLP        # tu implementación de la red
+from common.perceptrons.multilayer.trainer  import Trainer
+from common.perceptrons.multilayer.network import MLP        # tu implementación de la red
 
 # --------------------------------------------------------------------------- #
 # 2. leer la configuración

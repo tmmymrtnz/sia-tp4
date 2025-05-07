@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedShuffleSp
 from sklearn.cluster import KMeans
 sys.path.insert(0, "src")
 
-from common.perceptron import Perceptron
+from common.perceptron.simple.perceptron import Perceptron
 from common.activations import identity, identity_deriv, tanh, tanh_deriv
 from common.losses import mse
 

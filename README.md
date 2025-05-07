@@ -14,54 +14,56 @@ para instalar las dependencias necesarias en el ambiente virtual
 
 ## Ejecución
 
-### Ex 1
+### Ex 1 - Perceptrón simple con función de activación escalón
 
 Para la función lógica **"AND"**:
 
-```bash
+```sh
 python src/ex1/run_and.py configs/ex1/test.json
 ```
 
 Para la función lógica **"XOR"**:
 
-```bash
+```sh
 python src/ex1/run_xor.py configs/ex1/test.json
 ```
 
 ### Ex 2 - Comparación lineal vs no-lineal
 
 **Modelo lineal:**
-```bash
+```sh
 python src/ex2/runner.py configs/ex2/linear.json
 ```
 
 **Modelo no lineal (tanh):**
-```bash
+```sh
 python src/ex2/runner.py configs/ex2/nonlinear.json
 ```
 
-### Ex 3
+### Ex 3 - Perceptrón multicapa
 
 Para la función lógica **"XOR"**:
 
-```bash
-python3 src/ex3/runner.py configs/ex3/xor.json
+```sh
+python3 src/ex3/runner_xor.py configs/ex3/xor.json
 ```
 
 Para la función par:
 
-```bash
+```sh
 python3 src/ex3/runner_parity.py configs/ex3/parity.json
 ```
 
 Para la función dígito:
 
-```bash
+```sh
 python src/ex3/runner_digit.py configs/ex3/digit.json
 ```
 
+### Ex 4 - Perceptrón multicapa con dataset MNIST
+
 Para la función dígito con el dataset MNIST:
 
-```bash
-python src/ex3/runner_mnist.py data/MNIST/mnist_train.csv data/MNIST/mnist_test.csv configs/ex3/mnist.json
+```sh
+python src/ex4/runner_mnist.py data/MNIST/mnist_train.csv data/MNIST/mnist_test.csv configs/ex3/mnist.json
 ```

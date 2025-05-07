@@ -6,8 +6,8 @@ import sys
 import json
 
 sys.path.insert(0, "src")
-from ex3.trainer import Trainer
-from ex3.network import MLP
+from common.perceptrons.multilayer.trainer import Trainer
+from common.perceptrons.multilayer.network import MLP
 from ex3.runner_digit import load_digit_dataset
 
 # Global dataset paths

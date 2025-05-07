@@ -15,8 +15,8 @@ from sklearn.metrics import confusion_matrix
 
 # --- importar red y trainer ---
 sys.path.insert(0, "src")
-from ex3.trainer import Trainer
-from ex3.network import MLP
+from common.perceptrons.multilayer.trainer import Trainer
+from common.perceptrons.multilayer.network import MLP
 
 
 def load_parity_dataset(path: Path):

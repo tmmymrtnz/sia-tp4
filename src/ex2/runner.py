@@ -11,7 +11,7 @@ from pathlib import Path
 # --- importar utilidades comunes ------------------------------------------
 sys.path.insert(0, "src")
 from common.activations import identity, identity_deriv, tanh, tanh_deriv
-from common.perceptron import Perceptron
+from common.perceptron.simple.perceptron import Perceptron
 from common.losses import mse
 # --------------------------------------------------------------------------
 

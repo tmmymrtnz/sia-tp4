@@ -16,8 +16,8 @@ import seaborn as sns
 
 # --- importar red y trainer ---
 sys.path.insert(0, "src")
-from ex3.trainer import Trainer
-from ex3.network import MLP
+from common.perceptrons.multilayer.trainer import Trainer
+from common.perceptrons.multilayer.network import MLP
 
 
 def load_digit_dataset(path: Path):
