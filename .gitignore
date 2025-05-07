@@ -11,3 +11,5 @@ data/mnist/
 *.pdf
 
 my_venv
+
+search_results.csv

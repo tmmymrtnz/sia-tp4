@@ -1,0 +1,27 @@
+{
+  "accuracy": 1.0,
+  "config": {
+    "layer_sizes": [
+      35,
+      32,
+      32,
+      64,
+      10
+    ],
+    "activations": [
+      "",
+      "tanh",
+      "sigmoid",
+      "tanh",
+      "sigmoid"
+    ],
+    "dropout_rate": 0.30000000000000004,
+    "loss": "cross_entropy",
+    "optimizer": "adam",
+    "optim_kwargs": {
+      "learning_rate": 0.009862003107509317
+    },
+    "batch_size": 5,
+    "max_epochs": 2000
+  }
+}
