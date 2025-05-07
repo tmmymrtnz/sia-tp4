@@ -11,6 +11,8 @@ import sys
 import json
 import numpy as np
 from pathlib import Path
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # --- importar red y trainer ---
 sys.path.insert(0, "src")
@@ -37,7 +39,7 @@ def load_digit_dataset(path: Path):
         y.append(onehot)
     return np.array(X, dtype=float), np.array(y, dtype=float)
 
-def print_confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray, labels=range(10), title="Confusion Matrix"):
+def print_confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray, labels=range(10), title="Confusion Matrix", show_heatmap=False):
     matrix = np.zeros((len(labels), len(labels)), dtype=int)
     for t, p in zip(y_true, y_pred):
         matrix[t][p] += 1
@@ -50,8 +52,17 @@ def print_confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray, labels=range(
         row_str = " ".join(f"{val:^5}" for val in row)
         print(f"{i:^3} | {row_str}")
 
-def evaluate_dataset(net, X, y_true, prefix="Dataset"):
-    y_hat = net.forward(X)           # (N,10)
+    if show_heatmap:
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", xticklabels=labels, yticklabels=labels)
+        plt.title(title)
+        plt.xlabel("Predicted")
+        plt.ylabel("True")
+        plt.tight_layout()
+        plt.show()
+
+def evaluate_dataset(net, X, y_true, prefix="Dataset", show_heatmap=False):
+    y_hat = net.forward(X)
     preds = np.argmax(y_hat, axis=1)
     trues = np.argmax(y_true, axis=1)
     acc = np.mean(preds == trues)
@@ -59,7 +70,7 @@ def evaluate_dataset(net, X, y_true, prefix="Dataset"):
     print(f"\n[{prefix}] Accuracy: {acc:.4f}")
     for i, (p, prob, t) in enumerate(zip(preds, y_hat, trues)):
         print(f"{prefix} idx {i}: Pred={p} (p={prob[p]:.3f}) | True={t}")
-    print_confusion_matrix(trues, preds, title=f"[{prefix}] – Confusion Matrix")
+    print_confusion_matrix(trues, preds, title=f"[{prefix}] – Confusion Matrix", show_heatmap=show_heatmap)
 
 
 if __name__ == "__main__":
@@ -86,6 +97,8 @@ if __name__ == "__main__":
     if len(activs) == len(layer_sizes) - 1:
         activs = [""] + activs
 
+    heatmap = cfg.get("heatmap", False)
+
     # inicializar red y trainer
     net = MLP(layer_sizes, activs)
     trainer = Trainer(
@@ -101,7 +114,7 @@ if __name__ == "__main__":
     trainer.fit(X, y)
 
     # evaluación sobre el dataset original
-    evaluate_dataset(net, X, y, prefix="Original")
+    evaluate_dataset(net, X, y, prefix="Original", show_heatmap=heatmap)
 
     # evaluación sobre archivos con ruido
     for i in range(1, 5):
@@ -110,5 +123,5 @@ if __name__ == "__main__":
             print(f"Advertencia: {noisy_path} no existe, omitiendo.")
             continue
         Xn, yn = load_digit_dataset(noisy_path)
-        evaluate_dataset(net, Xn, yn, prefix=f"Noisy{i}")
+        evaluate_dataset(net, Xn, yn, prefix=f"Noisy{i}", show_heatmap=heatmap)
 
