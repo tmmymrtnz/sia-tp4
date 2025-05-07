@@ -1,6 +1,6 @@
 # TP3 SIA - Perceptrón Simple y Multicapa
 
-[Enunciado](docs/Enunciado\ TP3.pdf)
+[Enunciado](docs/Enunciado_TP3.pdf)
 
 ## Instalación
 
@@ -42,19 +42,19 @@ python src/ex2/runner.py configs/ex2/nonlinear.json
 
 ### Ex 3 - Perceptrón multicapa
 
-Para la función lógica **"XOR"**:
+Para la función lógica **"XOR"** (3.1):
 
 ```sh
 python3 src/ex3/runner_xor.py configs/ex3/xor.json
 ```
 
-Para la función par:
+Para la función **par** (3.2):
 
 ```sh
 python3 src/ex3/runner_parity.py configs/ex3/parity.json
 ```
 
-Para la función dígito:
+Para la función **dígito** (3.3):
 
 ```sh
 python src/ex3/runner_digit.py configs/ex3/digit.json
@@ -62,8 +62,8 @@ python src/ex3/runner_digit.py configs/ex3/digit.json
 
 ### Ex 4 - Perceptrón multicapa con dataset MNIST
 
-Para la función dígito con el dataset MNIST:
+Para la función dígito con el dataset **MNIST**:
 
 ```sh
-python src/ex4/runner_mnist.py data/MNIST/mnist_train.csv data/MNIST/mnist_test.csv configs/ex3/mnist.json
+python src/ex4/runner_mnist.py configs/ex4/mnist.json
 ```
