@@ -16,8 +16,8 @@ from pathlib import Path
 
 # --- importar red y trainer ---
 sys.path.insert(0, "src")
-from ex3.trainer import Trainer
-from ex3.network import MLP
+from common.perceptrons.multilayer.trainer import Trainer
+from common.perceptrons.multilayer.network import MLP
 from ex3.runner_parity import load_parity_dataset, evaluate_and_print
 
 # Configurar aspecto visual de los gráficos

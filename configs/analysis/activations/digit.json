@@ -1,0 +1,22 @@
+{
+  "dataset": "digit",                  
+  "exp_type": "activations",
+
+  "layer_sizes": [35, 64, 10],         
+  "candidate_activations": {
+    "hidden":  ["tanh", "sigmoid", "relu"],
+    "output":  ["softmax", "sigmoid"]  
+  },
+  "base_activation": {
+    "hidden": "tanh"
+  },
+
+  "loss"          : "cross_entropy",   
+  "optimizer"     : "adam",
+  "optim_kwargs"  : { "learning_rate": 0.01 },
+  "batch_size"    : 10,
+  "max_epochs"    : 5000,
+
+  "seeds"         : [0, 1, 2],         
+  "n_repeats"     : 3                  
+}

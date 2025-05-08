@@ -12,8 +12,8 @@ from sklearn.metrics import (
 
 sys.path.insert(0, "src")
 from ex3.runner_parity import load_parity_dataset
-from ex3.network       import MLP
-from ex3.trainer       import Trainer
+from common.perceptrons.multilayer.network       import MLP
+from common.perceptrons.multilayer.trainer       import Trainer
 
 def load_digit_dataset(path: Path):
     lines = [ln.strip() for ln in path.open() if ln.strip()]
