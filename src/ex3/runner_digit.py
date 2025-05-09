@@ -35,7 +35,7 @@ def load_digit_dataset(path: Path):
             bits.extend(row_bits)
         X.append(bits)
         onehot = np.zeros(10, dtype=float)
-        onehot[idx] = 1.0
+        onehot[idx % 10] = 1.0
         y.append(onehot)
     return np.array(X, dtype=float), np.array(y, dtype=float)
 
