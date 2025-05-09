@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-#  src/analysis/activations_exp.py
+#  src/analysis/activations.py
 # ------------------------------------------------------------
 """
 Inciso B - Comparativa de funciones de activación.
@@ -11,7 +11,9 @@ from pathlib import Path
 import json, sys
 
 import pandas as pd
-from analysis.utils_exp import load_dataset, run_experiment, plot_suite
+
+sys.path.insert(0, "src")
+from analysis.utils.utils_exp import load_dataset, run_experiment, plot_suite
 
 # ------------------------------------------------------------ #
 def main():
@@ -22,7 +24,11 @@ def main():
     cfg = json.loads(Path(sys.argv[1]).read_text())
 
     # -------- dataset -------------
-    X_tr, y_tr, X_te, y_te = load_dataset(cfg["dataset"], cfg["data_path"])
+    ds_name = cfg["dataset"]
+    data_p  = cfg.get("data_path", None)      # ← usar get()
+
+    X_tr, y_tr, X_te, y_te = load_dataset(ds_name, data_p)
+
 
     # -------- variantes -----------
     base_net = {"layer_sizes": cfg["layer_sizes"]}

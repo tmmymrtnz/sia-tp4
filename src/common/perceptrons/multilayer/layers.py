@@ -1,87 +1,84 @@
 # ------------------------------------------------------------
-#  src/ex3/layers.py
+#  src/ex3/layers.py          (reemplaza por completo este archivo)
 # ------------------------------------------------------------
 from __future__ import annotations
 import numpy as np
+import sys
+
+# Aseguramos que “src” esté en el path (por si se invoca desde la raíz)
+sys.path.insert(0, "src")
+
+# Registro global de activaciones y derivadas
+from common.activations import ACT, DACT
 
 
 class DenseLayer:
     """
-    Capa totalmente conectada (W @ x + b) + activación.
-    ‑ in_dim, out_dim  : tamaños
-    ‑ act_name         : "linear", "tanh", "sigmoid", "relu", "leaky_relu", …
+    Capa totalmente conectada:      y = ACT( x @ W + b )
+        • in_dim, out_dim ─ tamaños de entrada / salida
+        • act_name         ─ str (p.e. "tanh", "relu", "softmax", …)
     """
     # ------------------------------------------------------ #
-    def __init__(self, in_dim: int, out_dim: int, act_name: str):
-        self.act_name = act_name.lower()
+    def __init__(self, in_dim: int, out_dim: int, act_name: str | None = ""):
+        self.act_name = (act_name or "identity").lower()
 
-        # ----- pesos segun la no‑linealidad ---------------- #
+        if self.act_name not in ACT:
+            raise ValueError(f"Unknown activation '{self.act_name}'")
+
+        # ---------- inicialización de pesos ----------
         self.W = self._init_weights(in_dim, out_dim)
         self.b = np.zeros((1, out_dim))
 
-        # grads
+        # gradientes
         self.dW = np.zeros_like(self.W)
         self.db = np.zeros_like(self.b)
 
-        # cache para back‑prop
-        self._x:  np.ndarray | None = None
-        self._z:  np.ndarray | None = None
+        # cachés para back-prop
+        self._x: np.ndarray | None = None   # entrada al layer
+        self._z: np.ndarray | None = None   # salida lineal (pre-act)
 
     # ------------------------------------------------------ #
-    #  He / Xavier
+    #  He (ReLU-family)  /  Xavier-Glorot (resto)
     def _init_weights(self, fan_in: int, fan_out: int) -> np.ndarray:
         if self.act_name in {"relu", "leaky_relu"}:
-            std = np.sqrt(2.0 / fan_in)          # He
+            std = np.sqrt(2.0 / fan_in)               # He
             return np.random.randn(fan_in, fan_out) * std
-        else:                                    # tanh, sigmoid, …
-            limit = np.sqrt(6.0 / (fan_in + fan_out))   # Xavier/Glorot
+        else:
+            limit = np.sqrt(6.0 / (fan_in + fan_out)) # Xavier/Glorot
             return np.random.uniform(-limit, limit, size=(fan_in, fan_out))
 
     # ------------------------------------------------------ #
-    #  activación + derivada (sin dependencias externas)
-    def _activation(self, z: np.ndarray, deriv: bool = False) -> np.ndarray:
-        if self.act_name in {"identity", "linear"}:
-            return np.ones_like(z) if deriv else z
-
-        if self.act_name == "tanh":
-            if deriv:
-                a = np.tanh(z)
-                return 1.0 - a * a
-            return np.tanh(z)
-
-        if self.act_name == "sigmoid":
-            a = 1.0 / (1.0 + np.exp(-z))
-            return a * (1.0 - a) if deriv else a
-
-        if self.act_name == "relu":
-            return (z > 0).astype(z.dtype) if deriv else np.maximum(0, z)
-
-        if self.act_name == "leaky_relu":
-            alpha = 0.01
-            return np.where(z > 0, 1.0, alpha) if deriv else np.where(z > 0, z, alpha * z)
-
-        raise ValueError(f"Unknown activation '{self.act_name}'")
-
+    #  FORWARD
     # ------------------------------------------------------ #
     def forward(self, x: np.ndarray) -> np.ndarray:
+        """
+        x : (B, in_dim)
+        retorna (B, out_dim)
+        """
         self._x = x
         self._z = x @ self.W + self.b
-        return self._activation(self._z)
+        return ACT[self.act_name](self._z)
 
+    # ------------------------------------------------------ #
+    #  BACKWARD
     # ------------------------------------------------------ #
     def backward(self, grad_out: np.ndarray) -> np.ndarray:
         """
         grad_out = ∂L/∂a  (del layer superior)
         Devuelve ∂L/∂x para la capa inferior y deja dW/db listos.
         """
-        grad_z = grad_out * self._activation(self._z, deriv=True)
+        # ∂L/∂z = ∂L/∂a  *  ∂a/∂z
+        grad_z = grad_out * DACT[self.act_name](self._z)
 
+        # Gradientes de parámetros (promedio por batch)
         self.dW[:] = self._x.T @ grad_z / len(self._x)
         self.db[:] = grad_z.mean(axis=0, keepdims=True)
 
+        # Propaga a la capa anterior: ∂L/∂x = ∂L/∂z @ Wᵀ
         return grad_z @ self.W.T
 
     # ------------------------------------------------------ #
     def params_and_grads(self):
+        """Generador (param, grad) – útil para los optimizadores."""
         yield self.W, self.dW
         yield self.b, self.db

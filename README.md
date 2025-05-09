@@ -67,3 +67,23 @@ Para la función dígito con el dataset **MNIST**:
 ```sh
 python src/ex4/runner_mnist.py configs/ex4/mnist.json
 ```
+
+### Análisis
+
+Para el análisis de funciones de activación:
+
+```sh
+python src/analysis/activations.py configs/analysis/activations/[dataset].json
+```
+
+Para el análisis de funciones de losses:
+
+```sh
+python src/analysis/losses.py configs/analysis/losses/[dataset].json
+```
+
+Para el análisis de dropout:
+
+```sh
+pyhton src/analysis/dropout.py [config_file]
+```

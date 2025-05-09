@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-#  src/analysis/utils_exp.py
+#  src/analysis/utils/utils_exp.py
 # ------------------------------------------------------------
 """
 Funciones utilitarias compartidas por los experimentos de activación y pérdida.

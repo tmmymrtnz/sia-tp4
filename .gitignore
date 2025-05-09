@@ -5,6 +5,7 @@ __pycache__/
 
 # datasets generados
 data/mnist/
+plots
 
 # artefactos
 *.png
