@@ -1,24 +1,10 @@
 {
-    "dataset": "mnist",
-    "exp_type": "activations",
-  
-    "layer_sizes": [784, 256, 64, 10],
-    "candidate_activations": {
-      "hidden": ["relu", "tanh", "sigmoid"],
-      "output": ["softmax"]              
-    },
-    "base_activation": {
-      "hidden": "relu",
-      "output": "softmax"
-    },
-  
-    "loss"          : "cross_entropy",
-    "optimizer"     : "adam",
-    "optim_kwargs"  : { "learning_rate": 0.001 },
-    "batch_size"    : 128,
-    "max_epochs"    : 20,
-  
-    "seeds"         : [0, 1],
-    "n_repeats"     : 1
-  }
-  
+  "dataset"     : "mnist",
+  "layer_sizes" : [784, 128, 10],
+  "loss"        : "cross_entropy",
+  "optimizer"   : "adam",
+  "optim_kwargs": { "learning_rate": 0.001 },
+  "batch_size"  : 128,
+  "max_epochs"  : 20,
+  "n_seeds"     : 3
+}

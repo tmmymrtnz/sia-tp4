@@ -1,24 +1,11 @@
 {
-    "dataset": "parity",                 
-    "exp_type": "activations",
-  
-    "layer_sizes": [35, 16, 1],
-    "candidate_activations": {
-      "hidden":  ["tanh", "sigmoid", "relu"],
-      "output":  ["sigmoid"]             
-    },
-    "base_activation": {
-      "hidden": "tanh",
-      "output": "sigmoid"
-    },
-  
-    "loss"         : "bce",              
-    "optimizer"    : "sgd",
-    "optim_kwargs" : { "learning_rate": 0.01 },
-    "batch_size"   : 8,
-    "max_epochs"   : 3000,
-  
-    "seeds"        : [0, 1, 2, 3, 4],
-    "n_repeats"    : 2
-  }
-  
+  "dataset"     : "parity",
+  "data_path"   : "data/TP3-ej3-digitos.txt",
+  "layer_sizes" : [35, 16, 1],
+  "loss"        : "bce",
+  "optimizer"   : "adam",
+  "optim_kwargs": { "learning_rate": 0.01 },
+  "batch_size"  : 8,
+  "max_epochs"  : 2000,
+  "n_seeds"     : 5
+}

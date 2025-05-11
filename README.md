@@ -73,7 +73,7 @@ python src/ex4/runner_mnist.py configs/ex4/mnist.json
 Para el análisis de funciones de activación:
 
 ```sh
-python src/analysis/activations.py configs/analysis/activations/[dataset].json
+python src/analysis/activations.py configs/analysis/activations/config.json
 ```
 
 Para el análisis de funciones de losses:

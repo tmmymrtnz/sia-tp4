@@ -1,0 +1,46 @@
+{
+    "n_seeds": 3,
+  
+    "tasks": [
+      {
+        "tag"          : "parity",
+        "dataset"      : "parity",
+        "data_path"    : "data/TP3-ej3-digitos.txt",  
+        "layer_sizes"  : [35, 16, 1],
+  
+        "hidden_acts"  : ["sigmoid", "tanh", "relu"],
+        "out_acts"     : ["sigmoid"],                
+  
+        "train_cfg": {
+          "loss_name"     : "bce",
+          "optimizer_name": "adam",
+          "optim_kwargs"  : {"lr": 0.003},
+          "batch_size"    : 32,
+          "max_epochs"    : 50,
+          "log_every"     : 0
+        },
+  
+        "plot_title": "Parity – Activation Functions"
+      },
+  
+      {
+        "tag"          : "mnist",
+        "dataset"      : "mnist",
+        "layer_sizes"  : [784, 128, 64, 10],
+      
+        "hidden_acts"  : ["sigmoid", "tanh", "relu"],
+        "out_acts"     : ["softmax", "sigmoid"],
+      
+        "train_cfg": {
+          "loss_name"     : "cross_entropy",         
+          "optimizer_name": "adam",         
+          "optim_kwargs"  : { "lr": 0.001 },
+          "batch_size"    : 128,
+          "max_epochs"    : 20,
+          "log_every"     : 0
+        }
+      }
+      
+    ]
+  }
+  
