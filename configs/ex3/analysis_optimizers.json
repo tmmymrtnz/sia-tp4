@@ -1,0 +1,33 @@
+{
+  "task": "digit",
+  "data_path": "data/TP3-ej3-digitos.txt",
+  "layer_sizes": [35, 16, 10],
+  "activations": ["", "tanh", "sigmoid"],
+  "loss": "bce",
+  "batch_size": 8,
+  "max_epochs": 5000,
+
+  "optimizers": [
+    {
+      "name": "sgd",
+      "optim_kwargs": { "learning_rate": 0.1 }
+    },
+    {
+      "name": "momentum",
+      "optim_kwargs": {
+        "learning_rate": 0.01,
+        "momentum": 0.9
+      }
+    },
+    {
+      "name": "adam",
+      "optim_kwargs": {
+        "learning_rate": 0.001,
+        "beta1": 0.9,
+        "beta2": 0.999,
+        "eps": 1e-8
+      }
+    }
+  ]
+}
+
