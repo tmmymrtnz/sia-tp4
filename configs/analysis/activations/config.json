@@ -28,7 +28,7 @@
         "dataset"      : "mnist",
         "layer_sizes"  : [784, 128, 64, 10],
       
-        "hidden_acts"  : ["sigmoid", "tanh", "relu"],
+        "hidden_acts"  : ["sigmoid"],
         "out_acts"     : ["softmax", "sigmoid"],
       
         "train_cfg": {

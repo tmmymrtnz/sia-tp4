@@ -1,0 +1,27 @@
+{
+    "n_seeds"          : 3,
+    "random_state_base": 42,
+    "test_size"        : 0.20,
+  
+    "out_dir"          : "plots/loss_parity",
+  
+    "dataset_clean"    : "data/TP3-ej3-digitos.txt",
+    "datasets_noisy"   : [
+      "data/noisy1.txt",
+      "data/noisy2.txt",
+      "data/noisy3.txt",
+      "data/noisy4.txt"
+    ],
+  
+    "layer_sizes" : [35, 16, 1],
+    "hidden_act"  : "tanh",
+    "out_act"     : "sigmoid",
+  
+    "train_cfg": {
+      "optimizer_name": "adam",
+      "optim_kwargs"  : { "lr": 0.003 },
+      "batch_size"    : 32,
+      "max_epochs"    : 50
+    }
+  }
+  
