@@ -1,0 +1,25 @@
+{
+  "accuracy": 0.96,
+  "config": {
+    "layer_sizes": [
+      35,
+      8,
+      16,
+      1
+    ],
+    "activations": [
+      "",
+      "identity",
+      "relu",
+      "sigmoid"
+    ],
+    "dropout_rate": 0.1,
+    "loss": "bce",
+    "optimizer": "adam",
+    "optim_kwargs": {
+      "learning_rate": 0.001458639609290851
+    },
+    "batch_size": 20,
+    "max_epochs": 2000
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "accuracy": 1.0,
+  "config": {
+    "layer_sizes": [
+      35,
+      32,
+      64,
+      10
+    ],
+    "activations": [
+      "",
+      "identity",
+      "identity",
+      "softmax"
+    ],
+    "dropout_rate": 0.0,
+    "loss": "mse",
+    "optimizer": "adam",
+    "optim_kwargs": {
+      "learning_rate": 0.00036589992713535383
+    },
+    "batch_size": 20,
+    "max_epochs": 2000
+  }
+}

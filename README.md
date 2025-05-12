@@ -87,3 +87,11 @@ Para el análisis de dropout:
 ```sh
 pyhton src/analysis/dropout.py [config_file]
 ```
+
+### Optuna Search
+
+Para buscar la mejor configuración de parámetros para cierto caso:
+
+```sh
+python src/common/searchers/optuna_search.py [digit|parity|mnist]
+```
