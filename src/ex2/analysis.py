@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedShuffleSp
 from sklearn.cluster import KMeans
 sys.path.insert(0, "src")
 
-from common.perceptron.simple.perceptron import Perceptron
+from common.perceptrons.simple.perceptron import Perceptron
 from common.activations import identity, identity_deriv, tanh, tanh_deriv
 from common.losses import mse
 
@@ -184,7 +184,7 @@ def main(config_path):
                     if final_val < best['mse']:
                         best = {'mse': final_val, 'label': f"{combo_label}, ep={ep}", 'test_mse': test_mse}
 
-    # Plot learning curves grouped by epoch (separate linear & tanh with individual scales)
+        # Plot learning curves grouped by epoch (separate linear & tanh with individual scales)
     if settings.get('learning_curve'):
         for ep, curves in curves_by_epoch.items():
             # Determine best performer for this epoch (smallest validation MSE)
@@ -199,35 +199,37 @@ def main(config_path):
 
             # Split curves by activation
             linear_curves = {lbl: data for lbl, data in curves.items() if 'act=linear' in lbl}
-            tanh_curves = {lbl: data for lbl, data in curves.items() if 'act=tanh' in lbl}
+            tanh_curves   = {lbl: data for lbl, data in curves.items() if 'act=tanh'   in lbl}
+
             fig, axes = plt.subplots(1, 2, figsize=(12, 5), dpi=100)
-            # Linear subplot
-            axes[0].set_title(f'Linear - {ep} Epochs', fontsize=14)
-            axes[0].set_xlabel('Epoch', fontsize=12)
-            axes[0].set_ylabel('MSE', fontsize=12)
+
+            # --- Linear subplot (only training curves) ---
+            ax = axes[0]
+            ax.set_title(f'Linear - {ep} Epochs', fontsize=14)
+            ax.set_xlabel('Epoch', fontsize=12)
+            ax.set_ylabel('MSE', fontsize=12)
             lin_vals = []
-            for label, (tr_hist, val_hist) in linear_curves.items():
-                axes[0].plot(tr_hist, label=f"{label} (train)")
-                axes[0].plot(val_hist, '--', label=f"{label} (val)")
-                lin_vals.extend(tr_hist); lin_vals.extend(val_hist)
+            for label, (tr_hist, _) in linear_curves.items():
+                ax.plot(tr_hist, label=label)
+                lin_vals.extend(tr_hist)
             if lin_vals:
-                max_lin = max(lin_vals)
-                axes[0].set_ylim(0, max_lin * 1.1)
-            axes[0].legend(fontsize=8)
-            axes[0].grid(True, linestyle=':', linewidth=0.5)
-            # Tanh subplot
-            axes[1].set_title(f'Tanh - {ep} Epochs', fontsize=14)
-            axes[1].set_xlabel('Epoch', fontsize=12)
+                ax.set_ylim(0, max(lin_vals) * 1.1)
+            ax.legend(fontsize=8)
+            ax.grid(True, linestyle=':', linewidth=0.5)
+
+            # --- Tanh subplot (only training curves) ---
+            ax = axes[1]
+            ax.set_title(f'Tanh - {ep} Epochs', fontsize=14)
+            ax.set_xlabel('Epoch', fontsize=12)
             tanh_vals = []
-            for label, (tr_hist, val_hist) in tanh_curves.items():
-                axes[1].plot(tr_hist, label=f"{label} (train)")
-                axes[1].plot(val_hist, '--', label=f"{label} (val)")
-                tanh_vals.extend(tr_hist); tanh_vals.extend(val_hist)
+            for label, (tr_hist, _) in tanh_curves.items():
+                ax.plot(tr_hist, label=label)
+                tanh_vals.extend(tr_hist)
             if tanh_vals:
-                max_tanh = max(tanh_vals)
-                axes[1].set_ylim(0, max_tanh * 1.1)
-            axes[1].legend(fontsize=8)
-            axes[1].grid(True, linestyle=':', linewidth=0.5)
+                ax.set_ylim(0, max(tanh_vals) * 1.1)
+            ax.legend(fontsize=8)
+            ax.grid(True, linestyle=':', linewidth=0.5)
+
             plt.tight_layout()
             plt.show()
 

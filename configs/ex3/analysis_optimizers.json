@@ -1,6 +1,6 @@
 {
   "task": "digit",
-  "data_path": "data/TP3-ej3-digitos.txt",
+  "data_path": "data/large_data.txt",
   "layer_sizes": [35, 16, 10],
   "activations": ["", "tanh", "sigmoid"],
   "loss": "bce",
@@ -15,7 +15,7 @@
     {
       "name": "momentum",
       "optim_kwargs": {
-        "learning_rate": 0.01,
+        "learning_rate": 0.1,
         "momentum": 0.9
       }
     },
