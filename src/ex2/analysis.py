@@ -162,14 +162,19 @@ def main(config_path):
                         lr, bias, ep
                     )
 
+                    # desescalar MSE si corresponde a tanh
+                    if act_name == 'tanh' and y_min is not None:
+                        scale2 = ((y_max - y_min) / 2)**2
+                        tr_hist  = [h * scale2 for h in tr_hist]
+                        val_hist = [h * scale2 for h in val_hist]
+
                     # Store under the correct epoch
                     curves_by_epoch[ep][combo_label] = (tr_hist, val_hist)
 
                     # Compute scaled validation MSE
                     final_val = val_hist[-1] if val_hist else float('inf')
                     if act_name == 'tanh' and y_min is not None:
-                        scale2 = ((y_max - y_min) / 2)**2
-                        final_val *= scale2
+                        final_val *= 1.0  # ya está desescalado
 
                     # Evaluate test MSE
                     if act_name == 'tanh' and y_min is not None:
@@ -184,7 +189,7 @@ def main(config_path):
                     if final_val < best['mse']:
                         best = {'mse': final_val, 'label': f"{combo_label}, ep={ep}", 'test_mse': test_mse}
 
-        # Plot learning curves grouped by epoch (separate linear & tanh with individual scales)
+    # Plot learning curves grouped by epoch (separate linear & tanh with individual scales)
     if settings.get('learning_curve'):
         for ep, curves in curves_by_epoch.items():
             # Determine best performer for this epoch (smallest validation MSE)
@@ -233,7 +238,7 @@ def main(config_path):
             plt.tight_layout()
             plt.show()
 
-    # Report best modelf"\n=== Best model: {best['label']} ===")
+    # Report best model
     print(f"Val MSE: {best['mse']:.6f}, Test MSE: {best['test_mse']:.6f}")
 
     # K-fold cross-validation with best hyperparams
