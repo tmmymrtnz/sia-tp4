@@ -70,7 +70,7 @@ def build_config(trial, in_dim, out_dim, out_act, allowed_losses):
         "optimizer"    : trial.suggest_categorical("optim", OPTIMIZERS),
         "optim_kwargs" : { "learning_rate":
                            trial.suggest_float("lr", 1e-4, 1e-1, log=True) },
-        "batch_size"   : trial.suggest_categorical("batch", [5, 10, 20, 35, 128]),
+        "batch_size"   : trial.suggest_categorical("batch", [5, 7, 9, 10]),
         "max_epochs"   : 2000
     }
     return cfg
@@ -121,9 +121,34 @@ def make_objective(task, data_main, noise_sets, in_dim, out_dim,
     def _objective(trial):
         cfg = build_config(trial, in_dim, out_dim, out_act, allowed_losses)
         acc = evaluate(cfg, task, data_main, noise_sets)
+
+        # Get model object (with weights), reuse `evaluate` logic:
+        net = MLP(cfg["layer_sizes"], cfg["activations"], cfg["dropout_rate"])
+        trainer = Trainer(
+            net=net,
+            loss_name=cfg["loss"],
+            optimizer_name=cfg["optimizer"],
+            optim_kwargs=cfg["optim_kwargs"],
+            batch_size=cfg["batch_size"],
+            max_epochs=cfg["max_epochs"]
+        )
+
+        # Run training and track early stopping point
+        loss_history = trainer.fit(data_main[0], data_main[1])  # X, y
+        epoch_count = len(loss_history)
+
+        # Count trainable parameters
+        total_params = sum(np.prod(w.shape) for w, _ in net.params_and_grads())
+
+        # Save metrics
         trial.set_user_attr("config", deepcopy(cfg))
         trial.set_user_attr("avg_accuracy", acc)
-        return acc
+        trial.set_user_attr("epochs", epoch_count)
+        trial.set_user_attr("params", total_params)
+
+        # Final score: accuracy minus penalties
+        score = acc - 1e-4 * epoch_count - 1e-6 * total_params
+        return score
     return _objective
 
 # -------------------------------------------------------------------- #
