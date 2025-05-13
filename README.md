@@ -60,6 +60,11 @@ Para la función **dígito** (3.3):
 python src/ex3/runner_digit.py configs/ex3/digit.json
 ```
 
+Para la función **dígito** con matriz de confusión (heatmap):
+```sh
+python src/ex3/digit_heatmap.py configs/ex3/digit.json
+```
+
 ### Ex 4 - Perceptrón multicapa con dataset MNIST
 
 Para la función dígito con el dataset **MNIST**:
