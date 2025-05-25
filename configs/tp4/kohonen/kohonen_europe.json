@@ -1,0 +1,11 @@
+{
+    "data_path": "data/tp4/europe.csv",
+    "label_column": "Country",
+    "grid": [10, 10],
+    "n_iterations": 4500,
+    "alpha": 0.4,
+    "sigma": 5,
+    "seed": 123,
+    "out_dir": "plots/kohonen"
+  }
+  
