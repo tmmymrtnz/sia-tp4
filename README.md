@@ -24,6 +24,14 @@ python -m src.tp4.ex1.runner_kohonen.py configs/tp4/kohonen/kohonen_europe.json
 
 ### Ex 2.1 Modelo de Hopfield
 
+## Análisis
+
+```sh
+python -m src.analysis.tp4.kohonen.hyperparam_analysis \
+       --data  data/tp4/europe.csv \
+       --label Country \
+       --out   plots/kohonen_scan
+
 ## Tests
 
 ### Red de Kohonen
