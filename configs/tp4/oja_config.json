@@ -1,0 +1,6 @@
+{
+  "K": 1,
+  "sample": true,
+  "lr": 0.01,
+  "max_epochs": 500
+}
