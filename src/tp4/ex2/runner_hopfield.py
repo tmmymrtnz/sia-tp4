@@ -55,92 +55,107 @@ def energy(W, state):
 def similarity(state, target):
     return sum(1 for i in range(len(state)) if state[i] == target[i])
 
-def plot_evolution(energies, similarities):
-    steps = list(range(1, len(energies) + 1))
-    fig, ax1 = plt.subplots()
+def multi_run_recovery_stats(W, initial_states, target, max_steps, n_runs):
+    """
+    initial_states: a list of length-n_runs vectors, each the initial state to test
+    """
+    all_energies = []
+    all_sims = []
+    for state0 in initial_states:
+        state = state0.copy()
+        energies = []
+        sims = []
+        for step in range(max_steps):
+            e = energy(W, state)
+            s = similarity(state, target)
+            energies.append(e)
+            sims.append(s)
 
+            new_state = update_state(W, state)
+            if new_state == state:
+                # pad out the rest
+                energies += [e] * (max_steps - step - 1)
+                sims     += [s] * (max_steps - step - 1)
+                break
+            state = new_state
+
+        # if never converged early, energies/sims already length max_steps
+        all_energies.append(energies)
+        all_sims.append(sims)
+
+    # transpose and compute stats
+    mean_e = [sum(col)/n_runs for col in zip(*all_energies)]
+    min_e  = [min(col)       for col in zip(*all_energies)]
+    max_e  = [max(col)       for col in zip(*all_energies)]
+    mean_s = [sum(col)/n_runs for col in zip(*all_sims)]
+    min_s  = [min(col)       for col in zip(*all_sims)]
+    max_s  = [max(col)       for col in zip(*all_sims)]
+
+    return (mean_e, min_e, max_e), (mean_s, min_s, max_s)
+
+def plot_stats(energy_stats, sim_stats, max_steps, title):
+    steps = list(range(1, max_steps+1))
+    mean_e, min_e, max_e = energy_stats
+    mean_s, min_s, max_s = sim_stats
+
+    fig, ax1 = plt.subplots()
     ax1.set_xlabel('Step')
     ax1.set_ylabel('Energy', color='tab:blue')
-    ax1.plot(steps, energies, 'o-', label='Energy', color='tab:blue')
+    ax1.plot(steps, mean_e, '-', label='Mean Energy', color='tab:blue')
+    ax1.fill_between(steps, min_e, max_e, color='tab:blue', alpha=0.2, label='Energy range')
     ax1.tick_params(axis='y', labelcolor='tab:blue')
     ax1.grid(True)
 
     ax2 = ax1.twinx()
-    ax2.set_ylabel('Similarity (correct bits)', color='tab:green')
-    ax2.plot(steps, similarities, 's--', label='Similarity', color='tab:green')
+    ax2.set_ylabel('Similarity', color='tab:green')
+    ax2.plot(steps, mean_s, '-', label='Mean Similarity', color='tab:green')
+    ax2.fill_between(steps, min_s, max_s, color='tab:green', alpha=0.2, label='Similarity range')
     ax2.tick_params(axis='y', labelcolor='tab:green')
 
-    plt.title("Recovery Evolution")
-    plt.tight_layout()
+    fig.tight_layout()
+    plt.title(title)
     plt.show()
-
-def recover(W, initial_state, target, max_steps=10, show=True, plot=True):
-    state = initial_state.copy()
-    energies, sims = [], []
-
-    for step in range(max_steps):
-        e = energy(W, state)
-        energies.append(e)
-        s = similarity(state, target)
-        sims.append(s)
-
-        if show:
-            print(f"Step {step+1}: Energy={e:.2f}, Similarity={s}/{len(target)}")
-            print_pattern(state)
-
-        new_state = update_state(W, state)
-        if new_state == state:
-            if show:
-                print("Converged.\n")
-            break
-        state = new_state
-
-    if plot:
-        plot_evolution(energies, sims)
-
-    return state
-
-def add_noise(pattern, noise_fraction=0.1):
-    """Flip approximately noise_fraction of bits (min 1)."""
-    N = len(pattern)
-    flips = max(1, round(noise_fraction * N))
-    noisy = pattern.copy()
-    indices = random.sample(range(N), flips)
-    for i in indices:
-        noisy[i] *= -1
-    return noisy
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python hopfield.py <config.json>")
         sys.exit(1)
     cfg = read_config(sys.argv[1])
+
     letters_path   = cfg["letters_path"]
     noise_fraction = cfg["noise_fraction"]
     max_steps      = cfg["max_steps"]
-    plot_results   = cfg["plot_results"]
+    n_runs         = cfg.get("n_runs", 10)
+    plot_results   = cfg.get("plot_results", True)
 
     patterns = read_patterns(letters_path)
-
-    print("Original patterns:\n")
-    for p in patterns:
-        print_pattern(p)
-
     W = train(patterns)
 
-    print("\n--- Recovery from noised pattern ---\n")
-    noisy_pattern = add_noise(patterns[0], noise_fraction)
-    print_pattern(noisy_pattern)
-    _ = recover(W, noisy_pattern, patterns[0],
-                max_steps=max_steps,
-                show=True,
-                plot=plot_results)
+    # prepare noisy initial states
+    N = len(patterns[0])
+    noisy_inits = []
+    for _ in range(n_runs):
+        flips = max(1, round(noise_fraction * N))
+        p = patterns[0].copy()
+        for i in random.sample(range(N), flips):
+            p[i] *= -1
+        noisy_inits.append(p)
 
-    print("\n--- Testing with random initial state ---\n")
-    random_pattern = [random.choice([1, -1]) for _ in range(25)]
-    print_pattern(random_pattern)
-    final = recover(W, random_pattern, patterns[0],
-                    max_steps=max_steps,
-                    show=True,
-                    plot=plot_results)
-    print("Matched a known pattern." if final in patterns else "Detected a spurious state.")
+    print(f"\n--- Multi-run recovery from noisy pattern ({n_runs} runs, noise={noise_fraction*100:.1f}%) ---\n")
+    energy_stats_noisy, sim_stats_noisy = multi_run_recovery_stats(
+        W, noisy_inits, patterns[0], max_steps, n_runs
+    )
+    if plot_results:
+        plot_stats(energy_stats_noisy, sim_stats_noisy, max_steps,
+                   title="Noisy-pattern recovery (mean ± min/max)")
+
+    # prepare random initial states
+    random_inits = [[random.choice([1, -1]) for _ in range(N)] for _ in range(n_runs)]
+
+    print(f"\n--- Multi-run recovery from random patterns ({n_runs} runs) ---\n")
+    energy_stats_rand, sim_stats_rand = multi_run_recovery_stats(
+        W, random_inits, patterns[0], max_steps, n_runs
+    )
+    if plot_results:
+        plot_stats(energy_stats_rand, sim_stats_rand, max_steps,
+                   title="Random-start recovery (mean ± min/max)")
