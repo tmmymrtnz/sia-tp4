@@ -23,6 +23,20 @@ def print_pattern(vector):
         print(' '.join(['*' if x == 1 else ' ' for x in row]))
     print()
 
+def compute_orthogonality(patterns):
+    """Compute dot-products between patterns and report summary."""
+    n = len(patterns)
+    G = [[0]*n for _ in range(n)]
+    off_diags = []
+    for i in range(n):
+        for j in range(n):
+            dp = sum(patterns[i][k] * patterns[j][k] for k in range(len(patterns[0])))
+            G[i][j] = dp
+            if i != j:
+                off_diags.append(dp)
+    mean_abs = sum(abs(x) for x in off_diags) / len(off_diags) if off_diags else 0
+    return G, mean_abs
+
 def train(patterns):
     N = len(patterns[0])
     W = [[0]*N for _ in range(N)]
@@ -79,7 +93,6 @@ def multi_run_recovery_stats(W, initial_states, target, max_steps, n_runs):
                 break
             state = new_state
 
-        # if never converged early, energies/sims already length max_steps
         all_energies.append(energies)
         all_sims.append(sims)
 
@@ -128,10 +141,19 @@ if __name__ == "__main__":
     n_runs         = cfg.get("n_runs", 10)
     plot_results   = cfg.get("plot_results", True)
 
+    # --- load & orthogonality check ---------------------
     patterns = read_patterns(letters_path)
+
+    G, mean_abs_off = compute_orthogonality(patterns)  # ← orthogonality
+    print("Dot-product Gram matrix among stored patterns:")
+    for row in G:
+        print("  ", row)
+    print(f"Mean absolute off-diagonal dot-product: {mean_abs_off:.2f}\n")
+
+    # --- train Hopfield -------------------------------
     W = train(patterns)
 
-    # prepare noisy initial states
+    # --- multi-run over noisy variants ---------------
     N = len(patterns[0])
     noisy_inits = []
     for _ in range(n_runs):
@@ -141,7 +163,7 @@ if __name__ == "__main__":
             p[i] *= -1
         noisy_inits.append(p)
 
-    print(f"\n--- Multi-run recovery from noisy pattern ({n_runs} runs, noise={noise_fraction*100:.1f}%) ---\n")
+    print(f"--- Multi-run recovery from noisy pattern ({n_runs} runs, noise={noise_fraction*100:.1f}%) ---")
     energy_stats_noisy, sim_stats_noisy = multi_run_recovery_stats(
         W, noisy_inits, patterns[0], max_steps, n_runs
     )
@@ -149,10 +171,10 @@ if __name__ == "__main__":
         plot_stats(energy_stats_noisy, sim_stats_noisy, max_steps,
                    title="Noisy-pattern recovery (mean ± min/max)")
 
-    # prepare random initial states
+    # --- multi-run over random states ---------------
     random_inits = [[random.choice([1, -1]) for _ in range(N)] for _ in range(n_runs)]
 
-    print(f"\n--- Multi-run recovery from random patterns ({n_runs} runs) ---\n")
+    print(f"--- Multi-run recovery from random patterns ({n_runs} runs) ---")
     energy_stats_rand, sim_stats_rand = multi_run_recovery_stats(
         W, random_inits, patterns[0], max_steps, n_runs
     )

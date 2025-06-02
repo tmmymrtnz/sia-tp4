@@ -1,6 +1,6 @@
 {
   "letters_path":   "data/tp4/letters.txt",
-  "noise_fraction": 0.22,
+  "noise_fraction": 0.10,
   "max_steps":      4,
   "n_runs":         20,
   "plot_results":   true
